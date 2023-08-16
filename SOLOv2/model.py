@@ -895,6 +895,7 @@ class SOLOv2Model(tf.keras.Model):
             (gt_boxes, gt_labels, gt_cls_ids, gt_mask_img),
             fn_output_signature=(tf.int32, tf.int32))
         
+
         # tf.print("2",tf.shape(gt_img))
         # OHE class targets and delete bg
         class_targets = tf.one_hot(class_targets, self.ncls + 1)[..., 1:]
@@ -911,8 +912,9 @@ class SOLOv2Model(tf.keras.Model):
             flat_cls_pred, flat_kernel_pred = tf.map_fn(
                 flatten_predictions_func, [feat_cls_list, feat_kernel_list],
                 fn_output_signature=(tf.float32, tf.float32))
-            # tf.print(tf.shape(flat_cls_pred))
-
+            # tf.print(tf.shape(class_targets))
+            # tf.print("y_true,",class_targets)
+            # tf.print("y_pred1",flat_cls_pred.shape)
             flat_cls_pred = tf.sigmoid(flat_cls_pred)
             
             loss_function = partial(
@@ -947,11 +949,11 @@ class SOLOv2Model(tf.keras.Model):
                 if grad is not None)
 
         # Update Metrics
-        if self.ncls == 1:
-            class_targets = class_targets[..., tf.newaxis]
-        self.precision.update_state(class_targets, flat_cls_pred)
-        self.recall.update_state(class_targets, flat_cls_pred)
-
+        # if self.ncls == 1:
+        #     class_targets = class_targets[..., tf.newaxis]
+        # self.precision.update_state(class_targets, flat_cls_pred)
+        # self.recall.update_state(class_targets, flat_cls_pred)
+        # tf.print(1)
         return {m.name: m.result() for m in self.metrics}
     def check_size(self,gt_img,param):
         def add_batch_dim():
@@ -1019,10 +1021,10 @@ class SOLOv2Model(tf.keras.Model):
         seg_loss = tf.reduce_mean(seg_loss)
 
         # Update Metrics
-        if self.ncls == 1:
-            class_targets = class_targets[..., tf.newaxis]
-        self.precision.update_state(class_targets, flat_cls_pred)
-        self.recall.update_state(class_targets, flat_cls_pred)
+        # if self.ncls == 1:
+        #     class_targets = class_targets[..., tf.newaxis]
+        # self.precision.update_state(class_targets, flat_cls_pred)
+        # self.recall.update_state(class_targets, flat_cls_pred)
 
         # Update loss
         self.seg_loss.update_state(seg_loss)

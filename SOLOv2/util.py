@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 
-@tf.function
+# @tf.function
 def decode_predictions(seg_preds, scores, threshold=0.5, by_scores=True):
 
     """ Compute the labeled mask array from segmentation predictions.
@@ -233,7 +233,7 @@ def compute_solo_cls_targets(inputs,
     return classes_targets, labels_targets
 
 
-@tf.function
+# @tf.function
 def compute_mask_targets(gt_masks, gt_labels):
     """
     gt_mask is one_hot encoded so that the object with label i is the ith slice

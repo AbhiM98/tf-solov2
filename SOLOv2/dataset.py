@@ -250,8 +250,9 @@ class DataLoader():
         mask = self.create_mask(maskfn,img_s[0],img_s[1])
         # mask = np.array(Image.open(maskfn.numpy())).astype(np.int32)
         # mask = tf.io.decode_image(tf.io.read_file(maskfn), channels=1)
-        nx, ny = tf.shape(image)[0], tf.shape(image)[1]
-        mask = tf.image.resize(mask[...,tf.newaxis], size=(nx//2, ny//2), method='nearest')
+        nx, ny = img_s[0],img_s[1]#tf.shape(image)[0], tf.shape(image)[1]
+        # tf.print(tf.shape(mask))
+        mask = tf.image.resize(tf.expand_dims(mask,axis=-1), size=(nx//2, ny//2), method='nearest')
         # print(nx,ny)
 
         with open(datafn.numpy(), "r") as jsonfile:
@@ -270,13 +271,14 @@ class DataLoader():
                                 for v in data.values()]).astype(np.int32)
             labels = np.array(list(data.keys())).astype(np.int32)
             # print(labels)
+        # tf.print(tf.shape(mask,tf.shape(image)))
 
         return os.path.splitext(os.path.basename(imgfn.numpy()))[0], \
             image, \
-            mask[..., 0], \
-            tf.RaggedTensor.from_tensor(tf.convert_to_tensor(bboxes, dtype=tf.float32)[tf.newaxis, ...]), \
-            tf.RaggedTensor.from_tensor(tf.convert_to_tensor(classes, dtype=tf.int32)[tf.newaxis, ...]), \
-            tf.RaggedTensor.from_tensor(tf.convert_to_tensor(labels, dtype=tf.int32)[tf.newaxis, ...])
+            tf.squeeze(mask,axis=-1), \
+            tf.RaggedTensor.from_tensor(tf.expand_dims(tf.convert_to_tensor(bboxes, dtype=tf.float32),axis=0)), \
+            tf.RaggedTensor.from_tensor(tf.expand_dims(tf.convert_to_tensor(classes, dtype=tf.int32),axis=0)), \
+            tf.RaggedTensor.from_tensor(tf.expand_dims(tf.convert_to_tensor(labels, dtype=tf.int32),axis=0))
 
     def get_img(self, imgid, normalize=True):
         key = self.ids_to_imgs[imgid]
@@ -335,7 +337,7 @@ class aws_dataloader():
         print("done")
         self.trainset = DataLoader(local_path,cls_ind,dataset_type="train").dataset
         self.valset = DataLoader(local_path,cls_ind,dataset_type="val").dataset
-
+    
         
         # super(aws_dataloader,self).__init__(local_path,cls_ind)
     def data_local(self,aws_path,local_path):
